@@ -1,0 +1,70 @@
+/* 
+ * File:   main.c
+ *
+ * Created on 13. oktober 2015, 15:05
+ *https://github.com/gabrield/libthingspeak
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "thingspeak.h"
+#include "ts_http.h"
+#include <time.h>
+
+int test = 10;
+/*
+ * 
+ */
+int main(int argc, char** argv) {
+    while ( test <= 100){
+	printf("test");
+	//YP554VA5F9TKWN7J
+	//3227
+	char n;
+	ts_context_t *ctx   = NULL;
+        ts_context_t *ctx2   = NULL;
+	ts_datapoint_t data;
+     ts_datapoint_t data2;
+	char *result        = NULL;
+
+
+//arguments apikey, channel	
+	ctx = ts_create_context("RCXQUVWHOZ7G4FN4", 87374);
+        
+        ctx2 = ts_create_context("NMHQ9UZA3KDETD8X", 61456);
+        
+	result = (char*)malloc(sizeof(char)*MAXLINE);
+	bzero(result, MAXLINE);
+
+            //set value here 
+	ts_set_value_i32(&data, test);
+        ts_set_value_i32(&data2, test*3);
+	
+	//n=ts_http_post(ctx, HOST_API, "/update", "field1=21&field2=33"); for more than one data point
+	
+
+
+	printf("%s\n", ts_http_get(HOST_API, "/channels/3227/feeds/last",result));
+
+//int32_t ts_datastream_update(ts_context_t* ctx, ts_feed_id_t feed_id, char * datastream_id,
+  //                                                                    ts_datapoint_t *datapoint)
+ts_datastream_update(ctx, 1, "field1", &data);
+
+ts_datastream_update(ctx2, 13, "stuff", &data2);
+
+printf("%s\n", ts_http_get(HOST_API, "/channels/3227/feeds/last",result));
+	printf("\n\nJSON:\n%s\n", ts_feed_get_all(ctx, 0, TS_DATA_JSON, result));
+	printf("\n\nCSV:\n%s\n", ts_datastream_get(ctx, 0, TS_DATA_CSV, "field2", result));
+
+	
+	ts_delete_context(ctx);
+        test += 10;
+        
+       // delay(150);
+    }
+	return 0;
+}
+
+
